@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import sys
 from ansible import inventory
 from ansible.parsing.dataloader import DataLoader
@@ -20,6 +22,7 @@ class SSHInventory:
     def get_ssh_cmd(self, host):
         port = "22"
         user = "root"
+        options = "-F /etc/ansible/ssh.config"
 
         if 'ansible_port' in host.vars:
             port = host.vars['ansible_port']
@@ -29,8 +32,10 @@ class SSHInventory:
             user = host.vars['ansible_user']
         if 'ansible_ssh_user' in host.vars:
             user = host.vars['ansible_ssh_user']
+        if 'ansible_ssh_private_key_file' in host.vars:
+            options += " -i %s" % host.vars['ansible_ssh_private_key_file']
 
-        return "ssh {}@{} -p {} -F /etc/ansible/ssh.config".format(user, host.address, port)
+        return "ssh {}@{} -p {} {}".format(user, host.address, port, options)
 
 def main(args):
     pattern = args[0]
